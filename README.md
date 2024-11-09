@@ -15,8 +15,8 @@ local dhlock = {
     teamcheck = false, -- Enable/disable team check
     fovcolorlocked = Color3.new(0, 1, 0), -- Color when a player is locked (Green)
     fovcolorunlocked = Color3.new(1, 0, 0), -- Color when no player is locked (Red)
-   predictionX = 10, -- Amount of prediction in X direction (in studs)
-    predictionY = 10, -- Amount of prediction in Y direction (in studs)
+    lockpart = "HumanoidRootPart", -- Part to lock onto ("HumanoidRootPart", "UpperTorso", "LowerTorso", "Head")
+    smoothness = 1, -- Smoothness factor (higher = slower)
 }
 ```
 > [!IMPORTANT]
