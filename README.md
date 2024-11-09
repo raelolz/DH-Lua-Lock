@@ -30,6 +30,5 @@ local dhlock = {
 >  dhlock.showfov = true
 >  dhlock.fovcolorlocked = Color3.new(1, 0, 0)
 >  dhlock.fovcolorunlocked = Color3.new(1, 0, 0)
->  dhlock.predictionX = 10
->  dhlock.predictionY = 10
+>  dhlock.lockpart = "Head"
 > ```
