@@ -15,17 +15,16 @@ local dhlock = {
     enabled = false, -- Toggle aiming
     showfov = false, -- Show FOV circle
     teamcheck = false, -- Enable/disable team check
-    fovcolorlocked = Color3.new(0, 1, 0), -- Color when a player is locked
-    fovcolorunlocked = Color3.new(1, 0, 0), -- Color when no player is locked 
-    predicionX = 0, -- Amount of prediction in X direction (in studs)
-    predictionY = 0, -- Amount of prediction in Y direction (in studs)
+    fovcolorlocked = Color3.new(0, 1, 0), -- Color when a player is locked (Green)
+    fovcolorunlocked = Color3.new(1, 0, 0), -- Color when no player is locked (Red)
+   predictionX = 10, -- Amount of prediction in X direction (in studs)
+    predictionY = 10, -- Amount of prediction in Y direction (in studs)
 }
 
 -- Variables
 local isAiming = false
 local fovCircle
 local lockedPlayer = nil
-local lockedPlayerBeforeDeath = nil  -- Variable to store locked player before death
 local originalCFrameMethod
 
 -- Function to create and update the FOV circle
@@ -176,19 +175,7 @@ end)
 
 LocalPlayer.CharacterAdded:Connect(function()
     isAiming = false -- Reset aiming on respawn
-    -- Re-lock to previous locked player if they are still valid
-    if lockedPlayerBeforeDeath and lockedPlayerBeforeDeath.Parent then
-        lockedPlayer = lockedPlayerBeforeDeath
-    else
-        lockedPlayer = nil
-    end
-end)
-
--- Handle player death
-LocalPlayer.CharacterRemoving:Connect(function()
-    -- Store the locked player before death to restore after respawn
-    lockedPlayerBeforeDeath = lockedPlayer
-    lockedPlayer = nil -- Reset locked player on death
+    lockedPlayer = nil -- Reset locked player
 end)
 
 -- Render loop
@@ -198,4 +185,4 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- Initialize the hook
-HookPredictionCFrame()
+HookPredictionCFrame() 
