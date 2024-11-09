@@ -15,8 +15,8 @@ local dhlock = {
     enabled = false, -- Toggle aiming
     showfov = false, -- Show FOV circle
     teamcheck = false, -- Enable/disable team check
-    fovcolorlocked = Color3.new(0, 1, 0), -- Color when a player is locked (Green)
-    fovcolorunlocked = Color3.new(1, 0, 0), -- Color when no player is locked (Red)
+    fovcolorlocked = Color3.new(0, 1, 0), -- Color when a player is locked
+    fovcolorunlocked = Color3.new(1, 0, 0), -- Color when no player is locked 
     predicionX = 0, -- Amount of prediction in X direction (in studs)
     predictionY = 0, -- Amount of prediction in Y direction (in studs)
 }
