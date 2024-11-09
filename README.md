@@ -31,4 +31,5 @@ local dhlock = {
 >  dhlock.fovcolorlocked = Color3.new(1, 0, 0)
 >  dhlock.fovcolorunlocked = Color3.new(1, 0, 0)
 >  dhlock.lockpart = "Head"
+>  dhlock.smoothness = 2
 > ```
