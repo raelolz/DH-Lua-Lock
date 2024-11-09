@@ -24,11 +24,12 @@ local dhlock = {
 > ## Example Usage
 > ```lua
 >loadstring(game:HttpGet("https://raw.githubusercontent.com/Stratxgy/DH-Lua-Lock/refs/heads/main/Main.lua"))()
-> dhlock.fov = 80
-> dhlock.keybind = Enum.Keycode.E
+>  dhlock.fov = 80
+>  dhlock.keybind = Enum.Keycode.E
 >  dhlock.enabled = true
 >  dhlock.showfov = true
 >  dhlock.fovcolorlocked = Color3.new(1, 0, 0)
+>  fovcolorunlocked = Color3.new(1, 0, 0)
 >  dhlock.predictionX = 10
 >  dhlock.predictionY = 10
 > ```
