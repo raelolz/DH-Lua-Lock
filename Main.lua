@@ -17,6 +17,7 @@ local dhlock = {
     fovcolorlocked = Color3.new(0, 1, 0), -- Color when a player is locked (Green)
     fovcolorunlocked = Color3.new(1, 0, 0), -- Color when no player is locked (Red)
     lockpart = "HumanoidRootPart", -- Part to lock onto ("HumanoidRootPart", "UpperTorso", "LowerTorso", "Head")
+    smoothness = 1, -- Smoothness factor (higher = slower)
 }
 
 -- Variables
@@ -94,8 +95,8 @@ local function GetClosestPlayer()
     return closestPlayer
 end
 
--- Function to lock on and aim at a player using CFrame
-local function AimAtPlayerUsingCFrame(player)
+-- Function to lock on and aim at a player with smoothness
+local function AimAtPlayerSmoothly(player)
     local part = player.Character and player.Character:FindFirstChild(dhlock.lockpart)
     if not part then
         return
@@ -104,9 +105,13 @@ local function AimAtPlayerUsingCFrame(player)
     local camera = Workspace.CurrentCamera
     local targetPosition = part.Position
 
-    -- Lock the character's aim with CFrame
-    local cframeLookAt = CFrame.lookAt(camera.CFrame.Position, targetPosition)
-    camera.CFrame = cframeLookAt
+    -- Calculate direction to target
+    local currentCFrame = camera.CFrame
+    local targetCFrame = CFrame.lookAt(currentCFrame.Position, targetPosition)
+    local smoothFactor = 1 / dhlock.smoothness
+
+    -- Interpolate rotation toward the target
+    camera.CFrame = currentCFrame:Lerp(targetCFrame, smoothFactor)
 end
 
 -- Function to update aiming logic
@@ -118,7 +123,7 @@ local function UpdateAim()
     local closestPlayer = GetClosestPlayer()
     if closestPlayer then
         lockedPlayer = closestPlayer
-        AimAtPlayerUsingCFrame(lockedPlayer) -- Lock on to the closest player using CFrame
+        AimAtPlayerSmoothly(lockedPlayer) -- Lock on to the closest player with smoothness
     else
         lockedPlayer = nil
     end
