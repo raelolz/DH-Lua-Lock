@@ -3,7 +3,6 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
-local HttpService = game:GetService("HttpService")
 
 -- Local Player
 local LocalPlayer = Players.LocalPlayer
@@ -17,15 +16,14 @@ local dhlock = {
     teamcheck = false, -- Enable/disable team check
     fovcolorlocked = Color3.new(0, 1, 0), -- Color when a player is locked (Green)
     fovcolorunlocked = Color3.new(1, 0, 0), -- Color when no player is locked (Red)
-   predictionX = 10, -- Amount of prediction in X direction (in studs)
-    predictionY = 10, -- Amount of prediction in Y direction (in studs)
+    lockpart = "HumanoidRootPart", -- Part to lock onto ("HumanoidRootPart", "UpperTorso", "LowerTorso", "Head")
 }
 
 -- Variables
 local isAiming = false
 local fovCircle
 local lockedPlayer = nil
-local originalCFrameMethod
+local missingParts = {} -- Tracks missing parts to avoid repeated messages
 
 -- Function to create and update the FOV circle
 local function UpdateFOVCircle()
@@ -39,31 +37,15 @@ local function UpdateFOVCircle()
 
     -- Set the FOV circle's color based on whether a player is locked
     if lockedPlayer then
-        fovCircle.Color = dhlock.fovcolorunlocked
-    else
         fovCircle.Color = dhlock.fovcolorlocked
+    else
+        fovCircle.Color = dhlock.fovcolorunlocked
     end
 
     if dhlock.showfov then
         fovCircle.Visible = true
         fovCircle.Radius = dhlock.fov
-
-        local fovPosition = UserInputService:GetMouseLocation()
-
-        -- Apply prediction offset when locked onto a player
-        if lockedPlayer then
-            local camera = Workspace.CurrentCamera
-            local predictedPosition = lockedPlayer.Character.HumanoidRootPart.Position
-
-            -- Add fixed amounts to X and Y for prediction
-            predictedPosition = predictedPosition + Vector3.new(dhlock.predictionX, dhlock.predictionY, 0)
-
-            -- Convert predicted position to screen space
-            local screenPos = camera:WorldToViewportPoint(predictedPosition)
-            fovPosition = Vector2.new(screenPos.X, screenPos.Y)
-        end
-
-        fovCircle.Position = fovPosition
+        fovCircle.Position = UserInputService:GetMouseLocation()
     else
         fovCircle.Visible = false
     end
@@ -71,11 +53,16 @@ end
 
 -- Function to check if a player is within the FOV
 local function IsPlayerInFOV(player)
-    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+    local part = player.Character and player.Character:FindFirstChild(dhlock.lockpart)
+    if not part then
+        if not missingParts[dhlock.lockpart] then
+            print("Warning: Lock part '" .. dhlock.lockpart .. "' not found on " .. player.Name)
+            missingParts[dhlock.lockpart] = true
+        end
         return false
     end
 
-    local characterPosition = Workspace.CurrentCamera:WorldToViewportPoint(player.Character.HumanoidRootPart.Position)
+    local characterPosition = Workspace.CurrentCamera:WorldToViewportPoint(part.Position)
     local mousePosition = UserInputService:GetMouseLocation()
     local fovDistance = (Vector2.new(characterPosition.X, characterPosition.Y) - mousePosition).Magnitude
 
@@ -88,11 +75,12 @@ local function GetClosestPlayer()
     local closestDistance = math.huge
 
     for _, player in pairs(Players:GetPlayers()) do
+        local part = player.Character and player.Character:FindFirstChild(dhlock.lockpart)
         if player ~= LocalPlayer and 
            (not dhlock.teamcheck or player.Team ~= LocalPlayer.Team) and 
-           IsPlayerInFOV(player) then
+           part and IsPlayerInFOV(player) then
 
-            local playerPos = player.Character.HumanoidRootPart.Position
+            local playerPos = part.Position
             local localPlayerPos = LocalPlayer.Character.HumanoidRootPart.Position
             local distance = (playerPos - localPlayerPos).Magnitude
 
@@ -106,35 +94,18 @@ local function GetClosestPlayer()
     return closestPlayer
 end
 
--- Hook the CFrame method to apply prediction when getting the HumanoidRootPart's CFrame
-local function HookPredictionCFrame()
-    originalCFrameMethod = hookmetamethod(game, "__index", function(self, key)
-        if key == "CFrame" and self:IsA("BasePart") and self.Name == "HumanoidRootPart" then
-            -- Apply prediction offset to the CFrame position when locked on
-            if lockedPlayer and self.Parent == lockedPlayer.Character then
-                local predictedPosition = self.Position + Vector3.new(dhlock.predictionX, dhlock.predictionY, 0)
-                return CFrame.new(predictedPosition)
-            end
-        end
-
-        return originalCFrameMethod(self, key)
-    end)
-end
-
--- Function to lock on and aim at a player using CFrame (with fixed prediction)
+-- Function to lock on and aim at a player using CFrame
 local function AimAtPlayerUsingCFrame(player)
-    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+    local part = player.Character and player.Character:FindFirstChild(dhlock.lockpart)
+    if not part then
         return
     end
 
     local camera = Workspace.CurrentCamera
-
-    -- Get the predicted position by adding fixed X and Y prediction amounts
-    local predictedPosition = player.Character.HumanoidRootPart.Position
-    predictedPosition = predictedPosition + Vector3.new(dhlock.predictionX, dhlock.predictionY, 0)
+    local targetPosition = part.Position
 
     -- Lock the character's aim with CFrame
-    local cframeLookAt = CFrame.lookAt(camera.CFrame.Position, predictedPosition)
+    local cframeLookAt = CFrame.lookAt(camera.CFrame.Position, targetPosition)
     camera.CFrame = cframeLookAt
 end
 
@@ -183,6 +154,3 @@ RunService.RenderStepped:Connect(function()
     UpdateAim()
     UpdateFOVCircle()
 end)
-
--- Initialize the hook
-HookPredictionCFrame() 
