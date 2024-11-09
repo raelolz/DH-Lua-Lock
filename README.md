@@ -1,4 +1,4 @@
-# DH-Lua-Lock
+# DH-Lua-Lock | Make sure to drop a ⭐ if you liked the script
 roblox lua lock (aimbot) designed for da hood, also works on games like hood customs.
 feel free to skid and use in your script.
 ## Load the Lock
