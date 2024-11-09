@@ -39,14 +39,14 @@ local function UpdateFOVCircle()
 
     -- Set the FOV circle's color based on whether a player is locked
     if lockedPlayer then
-        fovCircle.Color = SETTINGS.FOV_COLOR_LOCKED
+        fovCircle.Color = dhlock.fovcolorunlocked
     else
-        fovCircle.Color = SETTINGS.FOV_COLOR_UNLOCKED
+        fovCircle.Color = dhlock.fovcolorlocked
     end
 
-    if SETTINGS.SHOW_FOV then
+    if dhlock.showfov then
         fovCircle.Visible = true
-        fovCircle.Radius = SETTINGS.FOV_RADIUS
+        fovCircle.Radius = dhlock.fov
 
         local fovPosition = UserInputService:GetMouseLocation()
 
@@ -56,7 +56,7 @@ local function UpdateFOVCircle()
             local predictedPosition = lockedPlayer.Character.HumanoidRootPart.Position
 
             -- Add fixed amounts to X and Y for prediction
-            predictedPosition = predictedPosition + Vector3.new(SETTINGS.PREDICTION_X, SETTINGS.PREDICTION_Y, 0)
+            predictedPosition = predictedPosition + Vector3.new(dhlock.predictionX, dhlock.predictionY, 0)
 
             -- Convert predicted position to screen space
             local screenPos = camera:WorldToViewportPoint(predictedPosition)
@@ -79,7 +79,7 @@ local function IsPlayerInFOV(player)
     local mousePosition = UserInputService:GetMouseLocation()
     local fovDistance = (Vector2.new(characterPosition.X, characterPosition.Y) - mousePosition).Magnitude
 
-    return fovDistance <= SETTINGS.FOV_RADIUS
+    return fovDistance <= dhlock.fov
 end
 
 -- Function to get the closest player within the FOV
@@ -89,7 +89,7 @@ local function GetClosestPlayer()
 
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and 
-           (not SETTINGS.CHECK_TEAM or player.Team ~= LocalPlayer.Team) and 
+           (not dhlock.teamcheck or player.Team ~= LocalPlayer.Team) and 
            IsPlayerInFOV(player) then
 
             local playerPos = player.Character.HumanoidRootPart.Position
@@ -112,7 +112,7 @@ local function HookPredictionCFrame()
         if key == "CFrame" and self:IsA("BasePart") and self.Name == "HumanoidRootPart" then
             -- Apply prediction offset to the CFrame position when locked on
             if lockedPlayer and self.Parent == lockedPlayer.Character then
-                local predictedPosition = self.Position + Vector3.new(SETTINGS.PREDICTION_X, SETTINGS.PREDICTION_Y, 0)
+                local predictedPosition = self.Position + Vector3.new(dhlock.predictionX, dhlock.predictionY, 0)
                 return CFrame.new(predictedPosition)
             end
         end
@@ -131,7 +131,7 @@ local function AimAtPlayerUsingCFrame(player)
 
     -- Get the predicted position by adding fixed X and Y prediction amounts
     local predictedPosition = player.Character.HumanoidRootPart.Position
-    predictedPosition = predictedPosition + Vector3.new(SETTINGS.PREDICTION_X, SETTINGS.PREDICTION_Y, 0)
+    predictedPosition = predictedPosition + Vector3.new(dhlock.predictionX, dhlock.predictionY, 0)
 
     -- Lock the character's aim with CFrame
     local cframeLookAt = CFrame.lookAt(camera.CFrame.Position, predictedPosition)
@@ -140,7 +140,7 @@ end
 
 -- Function to update aiming logic
 local function UpdateAim()
-    if not isAiming or not SETTINGS.AIM_ENABLED then
+    if not isAiming or not dhlock.enabled then
         return
     end
 
@@ -155,13 +155,13 @@ end
 
 -- Input handling
 UserInputService.InputBegan:Connect(function(input)
-    if input.UserInputType == SETTINGS.ACTIVATE_KEY then
+    if input.UserInputType == dhlock.keybind then
         isAiming = true
     end
 end)
 
 UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == SETTINGS.ACTIVATE_KEY then
+    if input.UserInputType == dhlock.keybind then
         isAiming = false
         lockedPlayer = nil -- Reset locked player when MouseButton2 is released
     end
