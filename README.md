@@ -9,17 +9,18 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/Stratxgy/DH-Lua-Lock/
 ```lua
 getgenv().dhlock = {
     enabled = false,
+    showfov = false, -- Show FOV circle
     fov = 50, -- Radius of the FOV circle
     keybind = Enum.UserInputType.MouseButton2, -- Activation key
-    showfov = false, -- Show FOV circle
     teamcheck = false, -- Enable/disable team check
-    wallcheck = false, -- doesnt work well / doesnt work at all at times
+    wallcheck = false, -- it checks for walls
+    alivecheck = false, -- Enable/disable alive check
     lockpart = "Head", -- Part to lock onto, "HumanoidRootPart", "UpperTorso", "LowerTorso", "Torso" and most other parts
     smoothness = 1, -- Smoothness factor (higher = slower)
     fovcolorlocked = Color3.new(1, 0, 0), -- Color when locked
     fovcolorunlocked = Color3.new(0, 0, 0), -- Color when unlocked
     toggle = false, -- Toggle mode
-    blacklist = {}, -- Blacklisted players
+    blacklist = {} -- Blacklisted players
 }
 ```
 > [!IMPORTANT]
