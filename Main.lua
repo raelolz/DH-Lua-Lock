@@ -10,17 +10,18 @@ local LocalPlayer = Players.LocalPlayer
 -- Settings
 getgenv().dhlock = {
     enabled = false,
+    showfov = false, -- Show FOV circle
     fov = 50, -- Radius of the FOV circle
     keybind = Enum.UserInputType.MouseButton2, -- Activation key
-    showfov = false, -- Show FOV circle
     teamcheck = false, -- Enable/disable team check
-    wallcheck = false, -- doesnt work well / doesnt work at all at times
+    wallcheck = false, -- it checks for walls
+    alivecheck = false, -- Enable/disable alive check
     lockpart = "Head", -- Part to lock onto, "HumanoidRootPart", "UpperTorso", "LowerTorso", "Torso" and most other parts
     smoothness = 1, -- Smoothness factor (higher = slower)
     fovcolorlocked = Color3.new(1, 0, 0), -- Color when locked
     fovcolorunlocked = Color3.new(0, 0, 0), -- Color when unlocked
     toggle = false, -- Toggle mode
-    blacklist = {}, -- Blacklisted players
+    blacklist = {} -- Blacklisted players
 }
 
 -- Variables
@@ -66,6 +67,12 @@ local function IsPlayerInFOV(player)
     return distance <= dhlock.fov
 end
 
+-- Check if the player is alive
+local function IsPlayerAlive(player)
+    local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+    return humanoid and humanoid.Health > 0
+end
+
 -- Get closest player
 local function GetClosestPlayer()
     local closestPlayer = nil
@@ -75,10 +82,12 @@ local function GetClosestPlayer()
         local part = player.Character and player.Character:FindFirstChild(dhlock.lockpart)
         if player ~= LocalPlayer and part and IsPlayerInFOV(player) and not table.find(dhlock.blacklist, player.Name) then
             if not dhlock.teamcheck or player.Team ~= LocalPlayer.Team then
-                local distance = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-                if distance < shortestDistance then
-                    shortestDistance = distance
-                    closestPlayer = player
+                if not dhlock.alivecheck or IsPlayerAlive(player) then  -- Check if player is alive
+                    local distance = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                    if distance < shortestDistance then
+                        shortestDistance = distance
+                        closestPlayer = player
+                    end
                 end
             end
         end
