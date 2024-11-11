@@ -7,7 +7,7 @@ loadstring(game:HttpGet("https://raw.githubusercontent.com/Stratxgy/DH-Lua-Lock/
 ```
 ## Customizable Settings
 ```lua
-local dhlock = {
+getgenv().dhlock = {
     enabled = false,
     fov = 50, -- Radius of the FOV circle
     keybind = Enum.UserInputType.MouseButton2, -- Activation key
