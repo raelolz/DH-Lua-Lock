@@ -8,7 +8,7 @@ local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
 -- Settings
-local dhlock = {
+getgenv().dhlock = {
     enabled = false,
     fov = 50, -- Radius of the FOV circle
     keybind = Enum.UserInputType.MouseButton2, -- Activation key
