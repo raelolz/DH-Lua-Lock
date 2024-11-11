@@ -17,8 +17,8 @@ getgenv().dhlock = {
     wallcheck = false, -- doesnt work well / doesnt work at all at times
     lockpart = "Head", -- Part to lock onto, "HumanoidRootPart", "UpperTorso", "LowerTorso", "Torso" and most other parts
     smoothness = 1, -- Smoothness factor (higher = slower)
-    fovcolorlocked = Color3.new(0, 1, 0), -- Color when locked
-    fovcolorunlocked = Color3.new(1, 0, 0), -- Color when unlocked
+    fovcolorlocked = Color3.new(1, 0, 0), -- Color when locked
+    fovcolorunlocked = Color3.new(0, 0, 0), -- Color when unlocked
     toggle = false, -- Toggle mode
     blacklist = {}, -- Blacklisted players
 }
