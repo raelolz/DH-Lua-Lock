@@ -18,8 +18,8 @@ getgenv().dhlock = {
     lockpart = "Head", -- Part to lock onto when on the ground
     lockpartair = "HumanoidRootPart", -- Part to lock onto when in the air
     smoothness = 1, -- Smoothness factor (higher = slower)
-    predictionX = 0.165, -- Prediction multiplier for X-axis (horizontal)
-    predictionY = 0.165, -- Prediction multiplier for Y-axis (vertical)
+    predictionX = 0, -- Prediction multiplier for X-axis (horizontal)
+    predictionY = 0, -- Prediction multiplier for Y-axis (vertical)
     fovcolorlocked = Color3.new(1, 0, 0), -- Color when locked
     fovcolorunlocked = Color3.new(0, 0, 0), -- Color when unlocked
     toggle = false, -- Toggle mode (set true for toggle, false for hold)
