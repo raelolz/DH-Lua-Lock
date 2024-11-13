@@ -102,8 +102,7 @@ local function GetPredictedPosition(player)
     if not humanoidRootPart then return targetPart.Position end
 
     local velocity = humanoidRootPart.Velocity
-    -- Adjust the prediction to scale the effect from 0.165 to 0.065
-    local scaleFactor = 0.394  -- Adjust based on the desired scale (0.165 -> 0.065)
+    local scaleFactor = 0.394 -- Adjust based on the desired scale (0.165 -> 0.065)
 
     local predictedX = targetPart.Position + Vector3.new(velocity.X * dhlock.predictionX * scaleFactor, 0, velocity.Z * dhlock.predictionX * scaleFactor)
     local predictedY = Vector3.new(0, velocity.Y * dhlock.predictionY * scaleFactor, 0)
@@ -120,9 +119,14 @@ local function IsLockedPlayerValid()
     local targetPart = lockedPlayer.Character:FindFirstChild(lockPart)
     if not targetPart then return false end
 
-    -- Check if the locked player is still valid
-    return IsPlayerAlive(lockedPlayer) and IsPlayerInFOV(lockedPlayer) and 
-           (not dhlock.teamcheck or lockedPlayer.Team ~= LocalPlayer.Team)
+    local valid = IsPlayerAlive(lockedPlayer) and
+                  (not dhlock.teamcheck or lockedPlayer.Team ~= LocalPlayer.Team)
+
+    if not dhlock.toggle then
+        valid = valid and IsPlayerInFOV(lockedPlayer)
+    end
+
+    return valid
 end
 
 -- Get closest player
@@ -135,15 +139,11 @@ local function GetClosestPlayer()
         local lockPart = GetCurrentLockPart()
         local part = player.Character and player.Character:FindFirstChild(lockPart)
         if player ~= LocalPlayer and part and not table.find(dhlock.blacklist, player.Name) then
-            -- Ensure all conditions are met before considering the player
-            if IsPlayerInFOV(player) and 
-               (not dhlock.teamcheck or player.Team ~= LocalPlayer.Team) and
-               (not dhlock.alivecheck or IsPlayerAlive(player)) then
+            if IsPlayerInFOV(player) and
+                (not dhlock.teamcheck or player.Team ~= LocalPlayer.Team) and
+                (not dhlock.alivecheck or IsPlayerAlive(player)) then
 
-                -- Calculate the 3D distance from the local player to the target part
                 local worldDistance = (part.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-
-                -- Ensure the player is also the closest within the FOV
                 if worldDistance < shortestDistance then
                     shortestDistance = worldDistance
                     closestPlayer = player
@@ -171,40 +171,47 @@ end
 local function HandleAim()
     if not isAiming or not dhlock.enabled then return end
 
-    -- Maintain lock if the current player is still valid
-    if IsLockedPlayerValid() then
+    if lockedPlayer and IsLockedPlayerValid() then
         SmoothAimAtPlayer(lockedPlayer)
         return
     end
 
-    -- Find a new target if the current lock is invalid
-    local closestPlayer = GetClosestPlayer()
-    if closestPlayer then
-        lockedPlayer = closestPlayer
-        SmoothAimAtPlayer(closestPlayer)
-    else
-        lockedPlayer = nil
+    if not dhlock.toggle or not lockedPlayer then
+        local closestPlayer = GetClosestPlayer()
+        if closestPlayer then
+            lockedPlayer = closestPlayer
+        else
+            lockedPlayer = nil
+        end
+    end
+
+    if lockedPlayer then
+        SmoothAimAtPlayer(lockedPlayer)
     end
 end
 
 -- Input handling
-UserInputService.InputBegan:Connect(function(input)
-    if input.UserInputType == dhlock.keybind then
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+
+    if input.UserInputType == dhlock.keybind or input.KeyCode == dhlock.keybind then
         if dhlock.toggle then
-            -- Toggle the aiming state on key press
             isAiming = not isAiming
+            if not isAiming then
+                lockedPlayer = nil
+            end
         else
-            -- Hold to aim (only activates aiming)
             isAiming = true
         end
     end
 end)
 
 UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == dhlock.keybind and not dhlock.toggle then
-        -- Stop aiming when the key is released in hold mode
-        isAiming = false
-        lockedPlayer = nil
+    if input.UserInputType == dhlock.keybind or input.KeyCode == dhlock.keybind then
+        if not dhlock.toggle then
+            isAiming = false
+            lockedPlayer = nil
+        end
     end
 end)
 
