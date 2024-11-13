@@ -194,21 +194,26 @@ end
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
 
+    -- Only respond to the lock button if toggle mode is active
     if input.UserInputType == dhlock.keybind or input.KeyCode == dhlock.keybind then
         if dhlock.toggle then
+            -- Toggle the aiming state on key press (for toggle mode)
             isAiming = not isAiming
             if not isAiming then
                 lockedPlayer = nil
             end
         else
+            -- Hold to aim (only activates aiming, doesn't deactivate on other keypresses)
             isAiming = true
         end
     end
 end)
 
 UserInputService.InputEnded:Connect(function(input)
+    -- Only stop aiming when the key is released in hold mode
     if input.UserInputType == dhlock.keybind or input.KeyCode == dhlock.keybind then
         if not dhlock.toggle then
+            -- Stop aiming when the key is released in hold mode
             isAiming = false
             lockedPlayer = nil
         end
