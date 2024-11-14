@@ -32,6 +32,20 @@ local isAiming = false
 local fovCircle
 local lockedPlayer = nil
 
+-- Utility: Validate Keybind
+local function IsValidKeybind(input)
+    return typeof(input) == "EnumItem" and (input.EnumType == Enum.KeyCode or input.EnumType == Enum.UserInputType)
+end
+
+-- Utility: Update Keybind
+local function UpdateKeybind(newKeybind)
+    if IsValidKeybind(newKeybind) then
+        dhlock.keybind = newKeybind
+    else
+        warn("Invalid keybind specified!")
+    end
+end
+
 -- Create FOV circle
 local function CreateFOVCircle()
     if not fovCircle then
@@ -194,29 +208,22 @@ end
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
 
-    -- Only respond to the lock button if toggle mode is active
-    if input.UserInputType == dhlock.keybind or input.KeyCode == dhlock.keybind then
+    if (input.UserInputType == dhlock.keybind or input.KeyCode == dhlock.keybind) and IsValidKeybind(dhlock.keybind) then
         if dhlock.toggle then
-            -- Toggle the aiming state on key press (for toggle mode)
             isAiming = not isAiming
             if not isAiming then
                 lockedPlayer = nil
             end
         else
-            -- Hold to aim (only activates aiming, doesn't deactivate on other keypresses)
             isAiming = true
         end
     end
 end)
 
 UserInputService.InputEnded:Connect(function(input)
-    -- Only stop aiming when the key is released in hold mode
-    if input.UserInputType == dhlock.keybind or input.KeyCode == dhlock.keybind then
-        if not dhlock.toggle then
-            -- Stop aiming when the key is released in hold mode
-            isAiming = false
-            lockedPlayer = nil
-        end
+    if (input.UserInputType == dhlock.keybind or input.KeyCode == dhlock.keybind) and not dhlock.toggle and IsValidKeybind(dhlock.keybind) then
+        isAiming = false
+        lockedPlayer = nil
     end
 end)
 
