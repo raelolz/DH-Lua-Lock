@@ -1,13 +1,12 @@
--- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
--- Local Player
+
 local LocalPlayer = Players.LocalPlayer
 
--- Settings
+
 getgenv().dhlock = {
     enabled = false,
     showfov = false, -- Show FOV circle
@@ -23,6 +22,7 @@ getgenv().dhlock = {
     predictionY = 0, -- Prediction multiplier for Y-axis (vertical)
     fovcolorlocked = Color3.new(1, 0, 0), -- Color when locked
     fovcolorunlocked = Color3.new(0, 0, 0), -- Color when unlocked
+    fovtransparency = 0.8, -- Transparency of the FOV circle (0 = fully transparent, 1 = fully opaque)
     toggle = false, -- Toggle mode (set true for toggle, false for hold)
     blacklist = {} -- Blacklisted players
 }
@@ -53,7 +53,6 @@ local function CreateFOVCircle()
         fovCircle.Thickness = 2
         fovCircle.NumSides = 64
         fovCircle.Filled = false
-        fovCircle.Transparency = 1
     end
 end
 
@@ -64,6 +63,7 @@ local function UpdateFOVCircle()
     fovCircle.Visible = dhlock.showfov
     fovCircle.Position = UserInputService:GetMouseLocation()
     fovCircle.Radius = dhlock.fov
+    fovCircle.Transparency = dhlock.fovtransparency -- Apply transparency setting
 
     if lockedPlayer then
         fovCircle.Color = dhlock.fovcolorlocked
