@@ -1,13 +1,11 @@
--- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local Workspace = game:GetService("Workspace")
 
--- Local Player
 local LocalPlayer = Players.LocalPlayer
 
--- Settings
+
 getgenv().dhlock = {
     enabled = false,
     showfov = false, -- Show FOV circle
@@ -42,12 +40,10 @@ end
 local function UpdateKeybind(newKeybind)
     if IsValidKeybind(newKeybind) then
         dhlock.keybind = newKeybind
-    else
-        warn("Invalid keybind specified!")
     end
 end
 
--- Create FOV circle
+
 local function CreateFOVCircle()
     if not fovCircle then
         fovCircle = Drawing.new("Circle")
@@ -57,19 +53,28 @@ local function CreateFOVCircle()
     end
 end
 
--- Update FOV circle
+
 local function UpdateFOVCircle()
     CreateFOVCircle()
 
     fovCircle.Visible = dhlock.showfov
     fovCircle.Position = UserInputService:GetMouseLocation()
     fovCircle.Radius = dhlock.fov
-    fovCircle.Transparency = dhlock.fovtransparency -- Apply transparency setting
+    fovCircle.Transparency = dhlock.fovtransparency 
 
     if lockedPlayer then
         fovCircle.Color = dhlock.fovcolorlocked
     else
         fovCircle.Color = dhlock.fovcolorunlocked
+    end
+end
+
+-- Dynamically update FOV transparency
+local function UpdateFovTransparency(newTransparency)
+    if type(newTransparency) == "number" and newTransparency >= 0 and newTransparency <= 1 then
+        dhlock.fovtransparency = newTransparency
+        -- Refresh the FOV circle with the new transparency
+        UpdateFOVCircle()
     end
 end
 
@@ -86,7 +91,7 @@ local function GetCurrentLockPart()
     end
 end
 
--- Check if a player is in FOV
+
 local function IsPlayerInFOV(player)
     local lockPart = GetCurrentLockPart()
     local part = player.Character and player.Character:FindFirstChild(lockPart)
@@ -98,16 +103,16 @@ local function IsPlayerInFOV(player)
     local mousePosition = UserInputService:GetMouseLocation()
     local distance = (Vector2.new(screenPoint.X, screenPoint.Y) - mousePosition).Magnitude
 
-    return distance <= dhlock.fov -- Only true if within the FOV circle
+    return distance <= dhlock.fov 
 end
 
--- Check if the player is alive
+
 local function IsPlayerAlive(player)
     local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
     return humanoid and humanoid.Health > 0
 end
 
--- Get the predicted position of a target
+
 local function GetPredictedPosition(player)
     local lockPart = GetCurrentLockPart()
     local targetPart = player.Character and player.Character:FindFirstChild(lockPart)
@@ -125,7 +130,7 @@ local function GetPredictedPosition(player)
     return predictedX + predictedY
 end
 
--- Revalidate the current locked player
+
 local function IsLockedPlayerValid()
     if not lockedPlayer then return false end
     if not lockedPlayer.Character then return false end
@@ -144,7 +149,7 @@ local function IsLockedPlayerValid()
     return valid
 end
 
--- Get closest player
+
 local function GetClosestPlayer()
     local closestPlayer = nil
     local shortestDistance = math.huge
@@ -170,7 +175,7 @@ local function GetClosestPlayer()
     return closestPlayer
 end
 
--- Smooth aiming
+
 local function SmoothAimAtPlayer(player)
     local predictedPosition = GetPredictedPosition(player)
     if not predictedPosition then return end
@@ -182,7 +187,6 @@ local function SmoothAimAtPlayer(player)
     camera.CFrame = currentCFrame:Lerp(targetCFrame, 1 / dhlock.smoothness)
 end
 
--- Handle aiming
 local function HandleAim()
     if not isAiming or not dhlock.enabled then return end
 
@@ -205,7 +209,7 @@ local function HandleAim()
     end
 end
 
--- Input handling
+
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
 
@@ -228,7 +232,7 @@ UserInputService.InputEnded:Connect(function(input)
     end
 end)
 
--- Update loop
+
 RunService.RenderStepped:Connect(function()
     UpdateFOVCircle()
     HandleAim()
