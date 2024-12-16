@@ -5,44 +5,42 @@ local Workspace = game:GetService("Workspace")
 
 local LocalPlayer = Players.LocalPlayer
 
-
 getgenv().dhlock = {
     enabled = false,
-    showfov = false, -- Show FOV circle
-    fov = 50, -- Radius of the FOV circle
-    keybind = Enum.UserInputType.MouseButton2, -- Activation key
-    teamcheck = false, -- Enable/disable team check
-    wallcheck = false, -- Checks for walls
-    alivecheck = false, -- Enable/disable alive check
-    lockpart = "Head", -- Part to lock onto when on the ground
-    lockpartair = "HumanoidRootPart", -- Part to lock onto when in the air
-    smoothness = 1, -- Smoothness factor (higher = slower)
-    predictionX = 0, -- Prediction multiplier for X-axis (horizontal)
-    predictionY = 0, -- Prediction multiplier for Y-axis (vertical)
-    fovcolorlocked = Color3.new(1, 0, 0), -- Color when locked
-    fovcolorunlocked = Color3.new(0, 0, 0), -- Color when unlocked
-    fovtransparency = 0.6, -- Transparency of the FOV circle (0 = fully transparent, 1 = fully opaque)
-    toggle = false, -- Toggle mode (set true for toggle, false for hold)
-    blacklist = {} -- Blacklisted players
+    showfov = false, 
+    fov = 50,
+    keybind = Enum.UserInputType.MouseButton2, 
+    teamcheck = false,
+    wallcheck = false,
+    alivecheck = false, 
+    lockpart = "Head", 
+    lockpartair = "HumanoidRootPart", 
+    smoothness = 1,
+    predictionX = 0, 
+    predictionY = 0, 
+    fovcolorlocked = Color3.new(1, 0, 0),
+    fovcolorunlocked = Color3.new(0, 0, 0),
+    fovtransparency = 0.6, 
+    toggle = false, 
+    blacklist = {} 
 }
 
--- Variables
+
 local isAiming = false
 local fovCircle
 local lockedPlayer = nil
 
--- Utility: Validate Keybind
+
 local function IsValidKeybind(input)
     return typeof(input) == "EnumItem" and (input.EnumType == Enum.KeyCode or input.EnumType == Enum.UserInputType)
 end
 
--- Utility: Update Keybind
+
 local function UpdateKeybind(newKeybind)
     if IsValidKeybind(newKeybind) then
         dhlock.keybind = newKeybind
     end
 end
-
 
 local function CreateFOVCircle()
     if not fovCircle then
@@ -52,7 +50,6 @@ local function CreateFOVCircle()
         fovCircle.Filled = false
     end
 end
-
 
 local function UpdateFOVCircle()
     CreateFOVCircle()
@@ -69,16 +66,15 @@ local function UpdateFOVCircle()
     end
 end
 
--- Dynamically update FOV transparency
+
 local function UpdateFovTransparency(newTransparency)
     if type(newTransparency) == "number" and newTransparency >= 0 and newTransparency <= 1 then
         dhlock.fovtransparency = newTransparency
-        -- Refresh the FOV circle with the new transparency
         UpdateFOVCircle()
     end
 end
 
--- Determine the current lock part
+
 local function GetCurrentLockPart()
     local character = LocalPlayer.Character
     if not character then return dhlock.lockpart end
@@ -91,10 +87,9 @@ local function GetCurrentLockPart()
     end
 end
 
-
 local function IsPlayerInFOV(player)
-    local lockPart = GetCurrentLockPart()
-    local part = player.Character and player.Character:FindFirstChild(lockPart)
+    local lockPartName = GetCurrentLockPart()
+    local part = player.Character and player.Character:FindFirstChild(lockPartName)
     if not part then return false end
 
     local screenPoint, onScreen = Workspace.CurrentCamera:WorldToViewportPoint(part.Position)
@@ -106,23 +101,21 @@ local function IsPlayerInFOV(player)
     return distance <= dhlock.fov 
 end
 
-
 local function IsPlayerAlive(player)
     local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
     return humanoid and humanoid.Health > 0
 end
 
-
 local function GetPredictedPosition(player)
-    local lockPart = GetCurrentLockPart()
-    local targetPart = player.Character and player.Character:FindFirstChild(lockPart)
+    local lockPartName = GetCurrentLockPart()
+    local targetPart = player.Character and player.Character:FindFirstChild(lockPartName)
     if not targetPart then return nil end
 
     local humanoidRootPart = player.Character:FindFirstChild("HumanoidRootPart")
     if not humanoidRootPart then return targetPart.Position end
 
     local velocity = humanoidRootPart.Velocity
-    local scaleFactor = 0.394 -- Adjust based on the desired scale (0.165 -> 0.065)
+    local scaleFactor = 0.394 
 
     local predictedX = targetPart.Position + Vector3.new(velocity.X * dhlock.predictionX * scaleFactor, 0, velocity.Z * dhlock.predictionX * scaleFactor)
     local predictedY = Vector3.new(0, velocity.Y * dhlock.predictionY * scaleFactor, 0)
@@ -130,13 +123,12 @@ local function GetPredictedPosition(player)
     return predictedX + predictedY
 end
 
-
 local function IsLockedPlayerValid()
     if not lockedPlayer then return false end
     if not lockedPlayer.Character then return false end
 
-    local lockPart = GetCurrentLockPart()
-    local targetPart = lockedPlayer.Character:FindFirstChild(lockPart)
+    local lockPartName = GetCurrentLockPart()
+    local targetPart = lockedPlayer.Character:FindFirstChild(lockPartName)
     if not targetPart then return false end
 
     local valid = IsPlayerAlive(lockedPlayer) and
@@ -149,15 +141,14 @@ local function IsLockedPlayerValid()
     return valid
 end
 
-
 local function GetClosestPlayer()
     local closestPlayer = nil
     local shortestDistance = math.huge
     local mousePosition = UserInputService:GetMouseLocation()
 
     for _, player in pairs(Players:GetPlayers()) do
-        local lockPart = GetCurrentLockPart()
-        local part = player.Character and player.Character:FindFirstChild(lockPart)
+        local lockPartName = GetCurrentLockPart()
+        local part = player.Character and player.Character:FindFirstChild(lockPartName)
         if player ~= LocalPlayer and part and not table.find(dhlock.blacklist, player.Name) then
             if IsPlayerInFOV(player) and
                 (not dhlock.teamcheck or player.Team ~= LocalPlayer.Team) and
@@ -174,7 +165,6 @@ local function GetClosestPlayer()
 
     return closestPlayer
 end
-
 
 local function SmoothAimAtPlayer(player)
     local predictedPosition = GetPredictedPosition(player)
@@ -209,7 +199,6 @@ local function HandleAim()
     end
 end
 
-
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
     if gameProcessed then return end
 
@@ -231,7 +220,6 @@ UserInputService.InputEnded:Connect(function(input)
         lockedPlayer = nil
     end
 end)
-
 
 RunService.RenderStepped:Connect(function()
     UpdateFOVCircle()
