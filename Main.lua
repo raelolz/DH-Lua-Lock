@@ -1,9 +1,3 @@
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
-local Workspace = game:GetService("Workspace")
-
-local LocalPlayer = Players.LocalPlayer
 
 getgenv().dhlock = {
     enabled = false,
@@ -26,15 +20,21 @@ getgenv().dhlock = {
 }
 
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
+
+local LocalPlayer = Players.LocalPlayer
+
+
 local isAiming = false
 local fovCircle
 local lockedPlayer = nil
 
-
 local function IsValidKeybind(input)
     return typeof(input) == "EnumItem" and (input.EnumType == Enum.KeyCode or input.EnumType == Enum.UserInputType)
 end
-
 
 local function UpdateKeybind(newKeybind)
     if IsValidKeybind(newKeybind) then
@@ -66,7 +66,6 @@ local function UpdateFOVCircle()
     end
 end
 
-
 local function UpdateFovTransparency(newTransparency)
     if type(newTransparency) == "number" and newTransparency >= 0 and newTransparency <= 1 then
         dhlock.fovtransparency = newTransparency
@@ -74,16 +73,20 @@ local function UpdateFovTransparency(newTransparency)
     end
 end
 
-
 local function GetCurrentLockPart()
     local character = LocalPlayer.Character
     if not character then return dhlock.lockpart end
 
     local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local lockPartName = dhlock.lockpart
     if humanoid and humanoid.FloorMaterial == Enum.Material.Air then
-        return dhlock.lockpartair
+        lockPartName = dhlock.lockpartair
+    end
+
+    if character:FindFirstChild(lockPartName) then
+        return lockPartName
     else
-        return dhlock.lockpart
+        return "Head"
     end
 end
 
@@ -180,9 +183,8 @@ end
 local function HandleAim()
     if not isAiming or not dhlock.enabled then return end
 
-    if lockedPlayer and IsLockedPlayerValid() then
-        SmoothAimAtPlayer(lockedPlayer)
-        return
+    if lockedPlayer and not IsLockedPlayerValid() then
+        lockedPlayer = nil
     end
 
     if not dhlock.toggle or not lockedPlayer then
@@ -197,6 +199,16 @@ local function HandleAim()
     if lockedPlayer then
         SmoothAimAtPlayer(lockedPlayer)
     end
+end
+
+local function ResetState()
+    lockedPlayer = nil
+    isAiming = false
+end
+
+local function UpdateLockPartAir(newLockPartAir)
+    dhlock.lockpartair = newLockPartAir
+    ResetState()
 end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
