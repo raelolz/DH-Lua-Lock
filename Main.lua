@@ -38,6 +38,7 @@ end
 local function UpdateKeybind(newKeybind)
     if IsValidKeybind(newKeybind) then
         dhlock.keybind = newKeybind
+        RebindKeybind()
     end
 end
 
@@ -216,6 +217,39 @@ end
 local function UpdateLockPartAir(newLockPartAir)
     dhlock.lockpartair = newLockPartAir
     ResetState()
+end
+
+local function RebindKeybind()
+    UserInputService.InputBegan:Disconnect()
+    UserInputService.InputEnded:Disconnect()
+
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+
+        if (input.UserInputType == dhlock.keybind or input.KeyCode == dhlock.keybind) and IsValidKeybind(dhlock.keybind) then
+            holdingKeybind = true
+            if dhlock.toggle then
+                isAiming = not isAiming
+                if not isAiming then
+                    lockedPlayer = nil
+                    lastLockedPosition = nil
+                end
+            else
+                isAiming = true
+            end
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if (input.UserInputType == dhlock.keybind or input.KeyCode == dhlock.keybind) and IsValidKeybind(dhlock.keybind) then
+            holdingKeybind = false
+            if not dhlock.toggle then
+                isAiming = false
+                lockedPlayer = nil
+                lastLockedPosition = nil
+            end
+        end
+    end)
 end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
